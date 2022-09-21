@@ -507,7 +507,12 @@ void ConsolePlayer::menu ()
     if (m_driver.file)
         cerr << "Creating audio file, please wait...";
     else
-        cerr << "Playing, press ESC to stop...";
+        cerr << ((m_driver.sid == EMU_DUMPSID)
+                 ? "Dumping SID registers"
+                 : "Playing")
+             << ((m_quietLevel < 2)
+                 ? " press <ESC> to stop ... "
+                 : " ...");
 
     // Get all the text to the screen so music playback
     // is not disturbed.
@@ -611,7 +616,12 @@ void ConsolePlayer::refreshRegDump()
     if (m_driver.file)
         cerr << "Creating audio file, please wait...";
     else
-        cerr << "Playing, press ESC to stop...";
+        cerr << ((m_driver.sid == EMU_DUMPSID)
+                 ? "Dumping SID registers"
+                 : "Playing")
+             << ((m_quietLevel < 2)
+                 ? " press <ESC> to stop ... "
+                 : " ...");
 
     cerr << flush;
 }
