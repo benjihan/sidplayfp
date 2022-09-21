@@ -160,6 +160,11 @@ Use reSIDfp emulation engine.
 
 Use HardSID device.
 
+=item B<--dumpsid=>I<< dump-file|>&N >>
+
+Use DumpSID driver. This driver only dumps SID register access to a
+file. Use I<< >&N >> to dump into file descriptor #I<< N >>.  
+
 =item B<--exsid>
 
 Use exSID device.
