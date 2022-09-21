@@ -70,6 +70,11 @@ const char ConsolePlayer::RESID_ID[] = "ReSID";
 const char ConsolePlayer::HARDSID_ID[] = "HardSID";
 #endif
 
+#ifdef HAVE_SIDPLAYFP_BUILDERS_DUMPSID_H
+#   include <sidplayfp/builders/dumpsid.h>
+const char ConsolePlayer::DUMPSID_ID[] = "DumpSID";
+#endif
+
 #ifdef HAVE_SIDPLAYFP_BUILDERS_EXSID_H
 #   include <sidplayfp/builders/exsid.h>
 const char ConsolePlayer::EXSID_ID[] = "exSID";
@@ -180,6 +185,8 @@ ConsolePlayer::ConsolePlayer (const char * const name) :
     m_filename(""),
     m_quietLevel(0),
     m_verboseLevel(0),
+    m_dumpfd(-1),
+    m_dumpname(NULL),
     m_cpudebug(false),
     newSonglengthDB(false)
 {
@@ -239,6 +246,13 @@ ConsolePlayer::ConsolePlayer (const char * const name) :
             else if (emulation.engine.compare(TEXT("HARDSID")) == 0)
             {
                 m_driver.sid    = EMU_HARDSID;
+                m_driver.output = OUT_NULL;
+            }
+#endif
+#ifdef HAVE_SIDPLAYFP_BUILDERS_DUMPSID_H
+            else if (emulation.engine.compare(TEXT("DUMPSID")) == 0)
+            {
+                m_driver.sid    = EMU_DUMPSID;
                 m_driver.output = OUT_NULL;
             }
 #endif
@@ -488,6 +502,22 @@ bool ConsolePlayer::createSidEmu (SIDEMUS emu)
     }
 #endif // HAVE_SIDPLAYFP_BUILDERS_HARDSID_H
 
+#ifdef HAVE_SIDPLAYFP_BUILDERS_DUMPSID_H
+    case EMU_DUMPSID:
+    {
+        try
+        {
+            DumpSIDBuilder *hs = new DumpSIDBuilder(DUMPSID_ID, m_dumpname, m_dumpfd);
+            m_engCfg.sidEmulation = hs;
+            if (!hs->getStatus()) goto createSidEmu_error;
+            hs->create ((m_engine.info ()).maxsids());
+            if (!hs->getStatus()) goto createSidEmu_error;
+        }
+        catch (std::bad_alloc const &ba) {}
+        break;
+    }
+#endif // HAVE_SIDPLAYFP_BUILDERS_DUMPSID_H
+
 #ifdef HAVE_SIDPLAYFP_BUILDERS_EXSID_H
     case EMU_EXSID:
     {
@@ -626,6 +656,19 @@ bool ConsolePlayer::open (void)
     // Update display
     menu();
     updateDisplay();
+
+#ifdef HAVE_SIDPLAYFP_BUILDERS_DUMPSID_H
+    // Update driver info in the dump file
+    if (m_driver.sid == EMU_DUMPSID && m_driver.info) {
+        DumpSIDBuilder *hs = (DumpSIDBuilder*)m_engCfg.sidEmulation;
+        const SidTuneInfo * tuneInfo = m_tune.getInfo();
+        if (tuneInfo && tuneInfo->numberOfInfoStrings() >= 2)
+            hs->setInfo( m_filename.c_str(), tuneInfo->infoString(0), tuneInfo->infoString(1),
+                         tuneInfo->currentSong() );
+        hs->flush();
+    }
+#endif // HAVE_SIDPLAYFP_BUILDERS_DUMPSID_H
+
     return true;
 }
 
@@ -668,6 +711,11 @@ void ConsolePlayer::emuflush ()
         ((HardSIDBuilder *)m_engCfg.sidEmulation)->flush ();
         break;
 #endif // HAVE_SIDPLAYFP_BUILDERS_HARDSID_H
+#ifdef HAVE_SIDPLAYFP_BUILDERS_DUMPSID_H
+    case EMU_DUMPSID:
+        ((DumpSIDBuilder *)m_engCfg.sidEmulation)->flush ();
+        break;
+#endif // HAVE_SIDPLAYFP_BUILDERS_DUMPSID_H
 #ifdef HAVE_SIDPLAYFP_BUILDERS_EXSID_H
     case EMU_EXSID:
         ((exSIDBuilder *)m_engCfg.sidEmulation)->flush ();
@@ -849,11 +897,11 @@ void ConsolePlayer::decodeKeys ()
             }
         break;
 
-        case A_UP_ARROW:     
+        case A_UP_ARROW:
             m_speed.current *= 2;
             if (m_speed.current > m_speed.max)
                 m_speed.current = m_speed.max;
-  
+
             m_engine.fastForward (100 * m_speed.current);
         break;
 

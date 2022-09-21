@@ -26,6 +26,8 @@
 #include <cstring>
 #include <climits>
 #include <cstdlib>
+#include <cerrno>
+#include <cctype>
 
 #include "ini/types.h"
 
@@ -428,6 +430,33 @@ int ConsolePlayer::args(int argc, const char *argv[])
             }
 #endif // HAVE_SIDPLAYFP_BUILDERS_HARDSID_H
 
+#ifdef HAVE_SIDPLAYFP_BUILDERS_DUMPSID_H
+            else if (strncmp (&argv[i][1], "-dumpsid=",9) == 0)
+            {
+                m_dumpname      = argv[i]+10;
+                m_driver.sid    = EMU_DUMPSID;
+                m_driver.output = OUT_NULL;
+                if (!*m_dumpname) {
+                    displayError (ERR_SYNTAX);
+                    err = true;
+                }
+                // GB: Accepts only perfectly formed argument as file
+                // descriptor else fallback to filename.
+                if (m_dumpname[0] == '>' && m_dumpname[1] == '&' &&
+                    ::isdigit(m_dumpname[2]))
+                {
+                  char *end;
+                  errno = 0;
+                  int fd = strtol(m_dumpname+2, &end, 10);
+                  if (!errno && !*end)
+                    m_dumpfd = fd;
+                }
+                // GB: Not a file driver as we want to be able to play
+                //     thru external emulators via a pipe or a socket.
+                m_driver.file   = false;
+            }
+#endif // HAVE_SIDPLAYFP_BUILDERS_HARDSID_H
+
 #ifdef HAVE_SIDPLAYFP_BUILDERS_EXSID_H
             else if (strcmp (&argv[i][1], "-exsid") == 0)
             {
@@ -668,6 +697,11 @@ void ConsolePlayer::displayArgs (const char *arg)
             out << " --hardsid    enable hardsid support" << endl;
     }
 #endif
+
+#ifdef HAVE_SIDPLAYFP_BUILDERS_DUMPSID_H
+    out << " --dumpsid=F  enable dumpsid support (F=>&# writes into file descriptor #)" << endl;
+#endif
+
 #ifdef HAVE_SIDPLAYFP_BUILDERS_EXSID_H
     {
         exSIDBuilder hs("");
