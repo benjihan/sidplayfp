@@ -106,6 +106,7 @@ CPPFLAGS="$CPPFLAGS $SIDPLAYFP_CFLAGS"
 AC_CHECK_HEADERS([sidplayfp/builders/residfp.h \
 sidplayfp/builders/resid.h \
 sidplayfp/builders/hardsid.h \
+sidplayfp/builders/dumpsid.h \
 sidplayfp/builders/exsid.h])
 
 CPPFLAGS=$saveCPPFLAGS
