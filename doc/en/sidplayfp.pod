@@ -160,10 +160,19 @@ Use reSIDfp emulation engine.
 
 Use HardSID device.
 
-=item B<--dumpsid=>I<< dump-file|>&N >>
+=item B<--dumpsid>
 
-Use DumpSID driver. This driver only dumps SID register access to a
-file. Use I<< >&N >> to dump into file descriptor #I<< N >>.  
+Use DumpSID driver. This driver simply prints SID register access.
+Without parameter it outputs to I<stdout>. The program tries to quiet the
+player interface when it dumps into I<stdout> or I<stderr>.
+
+=item B<--dumpsid=>I<< dump-file >>
+
+Same as B<--dumpsid> but writes into a file I<dump-file>.
+
+=item B<--dumpsid>>I<#>
+
+Same as B<--dumpsid> but writes into a file descriptor I<#>.
 
 =item B<--exsid>
 
