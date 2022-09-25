@@ -516,6 +516,9 @@ void ConsolePlayer::menu ()
 
 void ConsolePlayer::refreshRegDump()
 {
+    if (m_quietLevel > 2)
+        return;
+
 #ifdef FEAT_REGS_DUMP_SID
     if (m_verboseLevel > 1)
     {

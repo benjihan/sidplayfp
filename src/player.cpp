@@ -678,7 +678,7 @@ void ConsolePlayer::close ()
     if (m_state == playerExit)
     {   // Natural finish
         emuflush ();
-        if (m_driver.file)
+        if (m_driver.file && m_quietLevel < 2)
             cerr << (char) 7; // Bell
     }
     else // Destroy buffers
