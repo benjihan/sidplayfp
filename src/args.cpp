@@ -30,8 +30,15 @@
 #include <cctype>
 
 #include "ini/types.h"
-
 #include "sidlib_features.h"
+
+#ifdef HAVE_SIDPLAYFP_BUILDERS_DUMPSID_H
+#ifdef HAVE_UNISTD_H
+#include <unistd.h>
+#else
+#include <cstdio>
+#endif
+#endif // HAVE_SIDPLAYFP_BUILDERS_DUMPSID_H
 
 #include "sidcxx11.h"
 
@@ -431,29 +438,47 @@ int ConsolePlayer::args(int argc, const char *argv[])
 #endif // HAVE_SIDPLAYFP_BUILDERS_HARDSID_H
 
 #ifdef HAVE_SIDPLAYFP_BUILDERS_DUMPSID_H
-            else if (strncmp (&argv[i][1], "-dumpsid=",9) == 0)
+            else if (strncmp (&argv[i][1], "-dumpsid",8) == 0)
             {
-                m_dumpname      = argv[i]+10;
+                int errfd=2, outfd=1;
+#ifdef STDOUT_FILENO
+                outfd = STDOUT_FILENO;
+#else
+                outfd = std::fileno(std::stdout);
+#endif
+#ifdef STDERR_FILENO
+                errfd = STDERR_FILENO;
+#else
+                errfd = std::fileno(std::stderr);
+#endif
                 m_driver.sid    = EMU_DUMPSID;
                 m_driver.output = OUT_NULL;
-                if (!*m_dumpname) {
+
+                if (argv[i][9] == '\0') {
+                    // Select standard output
+                    m_dumpfd = outfd;
+                    m_quietLevel = 9;   // GB: force fully quiet
+                }
+                else if (argv[i][9] == '=') {
+                    m_dumpname = argv[i]+10;
+                }
+                else if (argv[i][9] == '>' && ::isdigit(m_dumpname[10])) {
+                    char *end;
+                    errno = 0;
+                    int fd(strtol(m_dumpname+2, &end, 10));
+                    if (errno || *end) {
+                        displayError (ERR_SYNTAX);
+                        err = true;
+                    }
+                    else {
+                        m_dumpfd = fd;
+                        if (fd == outfd || fd == errfd)
+                            m_quietLevel = 9;
+                    }
+                } else {
                     displayError (ERR_SYNTAX);
                     err = true;
                 }
-                // GB: Accepts only perfectly formed argument as file
-                // descriptor else fallback to filename.
-                if (m_dumpname[0] == '>' && m_dumpname[1] == '&' &&
-                    ::isdigit(m_dumpname[2]))
-                {
-                  char *end;
-                  errno = 0;
-                  int fd = strtol(m_dumpname+2, &end, 10);
-                  if (!errno && !*end)
-                    m_dumpfd = fd;
-                }
-                // GB: Not a file driver as we want to be able to play
-                //     thru external emulators via a pipe or a socket.
-                m_driver.file   = false;
             }
 #endif // HAVE_SIDPLAYFP_BUILDERS_HARDSID_H
 
@@ -699,7 +724,9 @@ void ConsolePlayer::displayArgs (const char *arg)
 #endif
 
 #ifdef HAVE_SIDPLAYFP_BUILDERS_DUMPSID_H
-    out << " --dumpsid=F  enable dumpsid support (F=>&# writes into file descriptor #)" << endl;
+    out << " --dumpsid    enable dumpsid to the standard output" << endl;
+    out << " --dumpsid=F  enable dumpsid to file F" << endl;
+    out << " --dumpsid>#  enable dumpsid to file descriptor #" << endl;
 #endif
 
 #ifdef HAVE_SIDPLAYFP_BUILDERS_EXSID_H
