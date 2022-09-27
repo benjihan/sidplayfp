@@ -440,7 +440,7 @@ int ConsolePlayer::args(int argc, const char *argv[])
 #ifdef HAVE_SIDPLAYFP_BUILDERS_DUMPSID_H
             else if (strncmp (&argv[i][1], "-dumpsid",8) == 0)
             {
-                int errfd=2, outfd=1;
+                int errfd(2), outfd(1);
 #ifdef STDOUT_FILENO
                 outfd = STDOUT_FILENO;
 #else
@@ -454,30 +454,32 @@ int ConsolePlayer::args(int argc, const char *argv[])
                 m_driver.sid    = EMU_DUMPSID;
                 m_driver.output = OUT_NULL;
 
-                if (argv[i][9] == '\0') {
+                if (argv[i][9] == '\0')
+                {
                     // Select standard output
-                    m_dumpname = "<stdout>";
+                    m_outfile = "<stdout>";
                     m_dumpfd = outfd;
                     m_quietLevel = 9;   // GB: force fully quiet
                 }
-                else if (argv[i][9] == '=') {
-                    m_dumpname = argv[i]+10;
+                else if (argv[i][9] == '=')
+                {
+                    m_outfile = argv[i]+10;
                 }
-                else if (argv[i][9] == '>' && ::isdigit(m_dumpname[10])) {
+                else if (argv[i][9] == '#' && ::isdigit(argv[i][10]))
+                {
                     char *end;
+                    m_outfile = argv[i]+9;
                     errno = 0;
-                    int fd(strtol(m_dumpname+2, &end, 10));
+                    m_dumpfd = strtol(m_outfile+1, &end, 10);
                     if (errno || *end) {
                         displayError (ERR_SYNTAX);
                         err = true;
                     }
-                    else {
-                        m_dumpname = argv[i]+9;
-                        m_dumpfd = fd;
-                        if (fd == outfd || fd == errfd)
-                            m_quietLevel = 9;
-                    }
-                } else {
+                    else if (m_dumpfd == outfd || m_dumpfd == errfd)
+                        m_quietLevel = 9;
+                }
+                else
+                {
                     displayError (ERR_SYNTAX);
                     err = true;
                 }
@@ -502,7 +504,7 @@ int ConsolePlayer::args(int argc, const char *argv[])
             {
                 m_driver.sid = EMU_NONE;
             }
-            else if (strcmp (&argv[i][1], "-noaudio") == 0)
+            else  if (strcmp (&argv[i][1], "-noaudio") == 0)
             {
                 m_driver.output = OUT_NULL;
             }
@@ -551,20 +553,26 @@ int ConsolePlayer::args(int argc, const char *argv[])
         }
     }
 
-    // If filename specified we can only convert one song
-    if (m_outfile != nullptr)
-        m_track.single = true;
+    // if (m_driver.output > OUT_SOUNDCARD)
+    // m_track.loop = false;
 
-    // Can only loop if not creating audio files
-    if (m_driver.output > OUT_SOUNDCARD)
+    if (m_driver.file)
+    {
+        // Can only loop if not creating audio files
         m_track.loop = false;
 
-    // Check to see if we are trying to generate an audio file
-    // whilst using a hardware emulation
-    if (m_driver.file && (m_driver.sid >= EMU_HARDSID))
-    {
-        displayError ("ERROR: Cannot generate audio files using hardware emulations");
-        return -1;
+        // If filename specified we can only convert one song
+        // GB: notice it does not affect dumpsid which is not a file driver
+        if (m_outfile != nullptr)
+            m_track.single = true;
+
+        // Check to see if we are trying to generate an audio file
+        // whilst using a hardware emulation
+        if (m_driver.sid >= EMU_HARDSID)
+        {
+            displayError ("ERROR: Cannot generate audio files using hardware emulations");
+            return -1;
+        }
     }
 
     if (m_driver.info && m_driver.file)
@@ -727,8 +735,8 @@ void ConsolePlayer::displayArgs (const char *arg)
 
 #ifdef HAVE_SIDPLAYFP_BUILDERS_DUMPSID_H
     out << " --dumpsid    enable dumpsid to the standard output" << endl;
-    out << " --dumpsid=F  enable dumpsid to file F" << endl;
-    out << " --dumpsid>#  enable dumpsid to file descriptor #" << endl;
+    out << " --dumpsid=F  enable dumpsid to file F (Empty F = auto)" << endl;
+    out << " --dumpsid#N  enable dumpsid to file descriptor #N" << endl;
 #endif
 
 #ifdef HAVE_SIDPLAYFP_BUILDERS_EXSID_H

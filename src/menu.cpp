@@ -141,18 +141,16 @@ void ConsolePlayer::statusLine()
 {
     cerr << '\r';
     if (m_driver.file)
-        cerr << "Creating audio file";
-    else {
-        cerr << (m_driver.sid == EMU_DUMPSID
-                 ? "Dumping SID registers"
-                 : "Playing" );
-    }
+        cerr << "Creating \"" << m_finalname << '"';
+    else if (m_driver.sid == EMU_DUMPSID)
+        cerr << "Dumping \"" << m_finalname << '"';
+    else
+        cerr << "Playing";
     cerr << (m_quietLevel < 2
-         ? "; press <ESC> to stop ... "
-         : "; please wait ... " )
+             ? " <ESC> to stop ... "
+             : " Please wait ... " )
          << flush;
 }
-
 
 // Display console menu
 void ConsolePlayer::menu ()
@@ -288,7 +286,7 @@ void ConsolePlayer::menu ()
 
     if (m_verboseLevel)
     {
-        consoleTable  (tableMiddle);
+        consoleTable (tableMiddle);
         consoleColour (green, true);
         cerr << " Song Speed   : ";
         consoleColour (white, true);
@@ -668,9 +666,8 @@ void ConsolePlayer::consoleTable (player_table_t table)
     }
 
     // Move back to begining of row and skip first char
-    cerr << "\n";
+    cerr << '\n';
 }
-
 
 // Restore Ansi Console to defaults
 void ConsolePlayer::consoleRestore ()

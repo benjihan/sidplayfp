@@ -186,7 +186,7 @@ ConsolePlayer::ConsolePlayer (const char * const name) :
     m_quietLevel(0),
     m_verboseLevel(0),
     m_dumpfd(-1),
-    m_dumpname(NULL),
+//    m_dumpname(NULL),
     m_cpudebug(false),
     newSonglengthDB(false)
 {
@@ -284,9 +284,9 @@ ConsolePlayer::ConsolePlayer (const char * const name) :
 
 std::string ConsolePlayer::getFileName(const SidTuneInfo *tuneInfo, const char* ext)
 {
-    std::string title;
+    std::string& title = m_finalname;
 
-    if (m_outfile != NULL)
+    if (m_outfile != NULL && *m_outfile)
     {
         title = m_outfile;
         if (title.compare("-") != 0
@@ -331,7 +331,12 @@ bool ConsolePlayer::createOutput (OUTPUTS driver, const SidTuneInfo *tuneInfo)
     {
     case OUT_NULL:
         m_driver.device = &m_driver.null;
-    break;
+        if (m_driver.sid == EMU_DUMPSID)
+            if (m_outfile)
+                m_finalname = m_outfile;
+            else
+                getFileName(tuneInfo, ".dumpsid");
+        break;
 
     case OUT_SOUNDCARD:
         try
@@ -507,7 +512,7 @@ bool ConsolePlayer::createSidEmu (SIDEMUS emu)
     {
         try
         {
-            DumpSIDBuilder *hs = new DumpSIDBuilder(DUMPSID_ID, m_dumpname, m_dumpfd);
+            DumpSIDBuilder *hs = new DumpSIDBuilder(DUMPSID_ID, m_finalname.c_str(), m_dumpfd);
             m_engCfg.sidEmulation = hs;
             if (!hs->getStatus()) goto createSidEmu_error;
             hs->create ((m_engine.info ()).maxsids());
