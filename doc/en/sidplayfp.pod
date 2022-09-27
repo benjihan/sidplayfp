@@ -168,11 +168,14 @@ player interface when it dumps into I<stdout> or I<stderr>.
 
 =item B<--dumpsid=>I<< dump-file >>
 
-Same as B<--dumpsid> but writes into a file I<dump-file>.
+Same as B<--dumpsid> but writes into a file I<dump-file>. If
+I<dump-file> is empty the filename is auto generated with the same
+naming convention as B<--wav>. In that case multiple files may be
+created.
 
-=item B<--dumpsid>>I<#>
+=item B<--dumpsid>#I<N>
 
-Same as B<--dumpsid> but writes into a file descriptor I<#>.
+Same as B<--dumpsid> but writes into a file descriptor #I<N>.
 
 =item B<--exsid>
 

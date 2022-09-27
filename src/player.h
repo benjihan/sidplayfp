@@ -110,7 +110,6 @@ private:
 #endif
 #ifdef HAVE_SIDPLAYFP_BUILDERS_DUMPSID_H
     static const char  DUMPSID_ID[];
-    const char        *m_dumpname;
     int                m_dumpfd;
 #endif
 #ifdef HAVE_SIDPLAYFP_BUILDERS_EXSID_H
@@ -125,8 +124,9 @@ private:
     SidConfig          m_engCfg;
     SidTune            m_tune;
     player_state_t     m_state;
-    const char*        m_outfile;
-    std::string        m_filename;
+    const char*        m_outfile;       // output file set by command line (wav/au/dump)
+    std::string        m_filename;      // input file
+    std::string        m_finalname;     // final generated output file
 
     IniConfig          m_iniCfg;
     SidDatabase        m_database;
