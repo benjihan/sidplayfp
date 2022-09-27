@@ -456,6 +456,7 @@ int ConsolePlayer::args(int argc, const char *argv[])
 
                 if (argv[i][9] == '\0') {
                     // Select standard output
+                    m_dumpname = "<stdout>";
                     m_dumpfd = outfd;
                     m_quietLevel = 9;   // GB: force fully quiet
                 }
@@ -471,6 +472,7 @@ int ConsolePlayer::args(int argc, const char *argv[])
                         err = true;
                     }
                     else {
+                        m_dumpname = argv[i]+9;
                         m_dumpfd = fd;
                         if (fd == outfd || fd == errfd)
                             m_quietLevel = 9;

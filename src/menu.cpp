@@ -136,12 +136,28 @@ const char *ConsolePlayer::getNote(uint16_t freq)
     return "---";
 }
 #endif
+
+// Display console status line
+void ConsolePlayer::statusLine()
+{
+    cerr << '\r';
+    if (m_driver.file)
+        cerr << "Creating audio file";
+    else {
+        cerr << (m_driver.sid == EMU_DUMPSID
+                 ? "Dumping SID registers"
+                 : "Playing" );
+    }
+    cerr << (m_quietLevel < 2
+         ? "; press <ESC> to stop ... "
+         : "; please wait ... " )
+         << flush;
+}
+
+
 // Display console menu
 void ConsolePlayer::menu ()
 {
-    if (m_quietLevel > 1)
-        return;
-
     const SidInfo &info         = m_engine.info ();
     const SidTuneInfo *tuneInfo = m_tune.getInfo();
 
@@ -503,29 +519,11 @@ void ConsolePlayer::menu ()
 #endif
 
     consoleTable (tableEnd);
+ }
 
-    if (m_driver.file)
-        cerr << "Creating audio file, please wait...";
-    else
-        cerr << ((m_driver.sid == EMU_DUMPSID)
-                 ? "Dumping SID registers"
-                 : "Playing")
-             << ((m_quietLevel < 2)
-                 ? " press <ESC> to stop ... "
-                 : " ...");
-
-    // Get all the text to the screen so music playback
-    // is not disturbed.
-    if ( !m_quietLevel )
-        cerr << "00:00";
-    cerr << flush;
-}
 
 void ConsolePlayer::refreshRegDump()
 {
-    if (m_quietLevel > 2)
-        return;
-
 #ifdef FEAT_REGS_DUMP_SID
     if (m_verboseLevel > 1)
     {
@@ -615,18 +613,6 @@ void ConsolePlayer::refreshRegDump()
     else
 #endif
         cerr << "\r";
-
-    if (m_driver.file)
-        cerr << "Creating audio file, please wait...";
-    else
-        cerr << ((m_driver.sid == EMU_DUMPSID)
-                 ? "Dumping SID registers"
-                 : "Playing")
-             << ((m_quietLevel < 2)
-                 ? " press <ESC> to stop ... "
-                 : " ...");
-
-    cerr << flush;
 }
 
 // Set colour of text on console

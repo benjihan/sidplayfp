@@ -209,10 +209,11 @@ private:
     void displayError   (const char *error);
     void displayError   (unsigned int num) { ::displayError (m_name, num); }
     void decodeKeys     (void);
-    void updateDisplay();
+    void updateDisplay  ();
     void emuflush       (void);
     void menu           (void);
     void refreshRegDump ();
+    void statusLine     ();
 
     uint_least32_t getBufSize();
 

@@ -661,7 +661,8 @@ bool ConsolePlayer::open (void)
     m_state = playerRunning;
 
     // Update display
-    menu();
+    if (m_quietLevel < 2)
+      menu();
     updateDisplay();
 
 #ifdef HAVE_SIDPLAYFP_BUILDERS_DUMPSID_H
@@ -685,7 +686,7 @@ void ConsolePlayer::close ()
     if (m_state == playerExit)
     {   // Natural finish
         emuflush ();
-        if (m_driver.file && m_quietLevel < 2)
+        if (m_driver.file && m_quietLevel < 3)
             cerr << (char) 7; // Bell
     }
     else // Destroy buffers
@@ -705,6 +706,9 @@ void ConsolePlayer::close ()
 #ifndef _WIN32
         cerr << endl;
 #endif
+    }
+    else if (m_quietLevel == 2) {
+        cerr << endl;
     }
 }
 
@@ -860,7 +864,11 @@ void ConsolePlayer::updateDisplay()
     const uint_least32_t milliseconds = seconds * 1000;
 #endif
 
-    refreshRegDump();
+    if (m_quietLevel < 1)
+      refreshRegDump();
+
+    if (m_quietLevel < 3)
+      statusLine();
 
     if (!m_quietLevel && (seconds != (m_timer.current / 1000)))
     {
