@@ -339,7 +339,7 @@ bool ConsolePlayer::createOutput (OUTPUTS driver, const SidTuneInfo *tuneInfo)
     case OUT_NULL:
         m_driver.device = &m_driver.null;
         if (m_driver.sid == EMU_DUMPSID)
-            if (m_outfile)
+            if (m_outfile && *m_outfile)
                 m_finalname = m_outfile;
             else
                 getFileName(tuneInfo, ".dumpsid");
