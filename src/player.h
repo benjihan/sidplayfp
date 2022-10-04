@@ -110,7 +110,6 @@ private:
 #endif
 #ifdef HAVE_SIDPLAYFP_BUILDERS_DUMPSID_H
     static const char  DUMPSID_ID[];
-    int                m_dumpfd;
 #endif
 #ifdef HAVE_SIDPLAYFP_BUILDERS_EXSID_H
     static const char  EXSID_ID[];
@@ -127,7 +126,7 @@ private:
     const char*        m_outfile;       // output file set by command line (wav/au/dump)
     std::string        m_filename;      // input file
     std::string        m_finalname;     // final generated output file
-
+    int                m_dumpfd;        // file descriptor to dump (if != -1)
     IniConfig          m_iniCfg;
     SidDatabase        m_database;
 

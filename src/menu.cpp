@@ -143,7 +143,10 @@ void ConsolePlayer::statusLine()
     if (m_driver.file)
         cerr << "Creating \"" << m_finalname << '"';
     else if (m_driver.sid == EMU_DUMPSID)
-        cerr << "Dumping \"" << m_finalname << '"';
+        if (m_dumpfd == -1)
+            cerr << "Dumping >\"" << m_finalname << '"';
+        else
+            cerr << "Dumping >&" << m_dumpfd;
     else
         cerr << "Playing";
     cerr << (m_quietLevel < 2
