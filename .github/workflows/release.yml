@@ -11,7 +11,7 @@ jobs:
 
     steps:
     - name: deps
-      run: sudo apt-get install gettext libsidplayfp-dev
+      run: sudo apt-get install gettext libsidplayfp-dev libstilview-dev
     - uses: actions/checkout@v2
       with:
         ref: ${{ github.ref }}
@@ -24,7 +24,7 @@ jobs:
       run: |
         make dist
         RELEASE_TARBALL=$(ls sidplayfp-*.tar.gz)
-        echo ::set-output name=filename::${RELEASE_TARBALL}
+        echo "filename=${RELEASE_TARBALL}" >> $GITHUB_OUTPUT
     - name: Upload to release
       uses: JasonEtco/upload-to-release@master
       with:
